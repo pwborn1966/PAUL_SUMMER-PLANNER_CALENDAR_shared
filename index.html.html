@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<!-- saved from url=(0051)file:///C:/Users/pwbor/Downloads/trip-calendar.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trip Planning Calendar</title>
+<style>
+  :root {
+    --orlando-bg: #E1F5EE; --orlando-border: #1D9E75; --orlando-text: #085041;
+    --ga-bg: #EEEDFE; --ga-border: #7F77DD; --ga-text: #3C3489;
+    --driving-bg: #FAECE7; --driving-border: #D85A30; --driving-text: #993C1D;
+    --other-bg: #FAEEDA; --other-border: #BA7517; --other-text: #633806;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px;
+    color: #1a1a1a;
+    background: #ffffff;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 16px;
+  }
+  .mode-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .mode-btn {
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: white;
+    color: #333;
+    cursor: pointer;
+  }
+  .mode-btn.active {
+    background: #1a1a1a;
+    color: white;
+    border-color: #1a1a1a;
+  }
+  .legend {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 16px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    display: inline-block;
+    border: 1px solid;
+  }
+  .month-block {
+    margin-bottom: 24px;
+  }
+  .month-header {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid #1a1a1a;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .dow {
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+    padding: 4px 0;
+  }
+  .day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 13px;
+    border: 1px solid #e5e5e5;
+    background: white;
+    color: #1a1a1a;
+    cursor: pointer;
+    padding: 2px;
+    overflow: hidden;
+    line-height: 1.2;
+  }
+  .day.tagged {
+    font-weight: 500;
+  }
+  .day-note {
+    font-size: 8px;
+    font-weight: 400;
+    text-align: center;
+  }
+  .footer-note {
+    font-size: 12px;
+    color: #666;
+    margin: 16px 0 8px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+  }
+  .summary-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+  }
+  #editorOverlay {
+    display: none;
+    margin-top: 16px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+  }
+  #editorLabel {
+    font-size: 12px;
+    font-weight: 500;
+    margin: 0 0 8px;
+  }
+  #editorInput {
+    width: 100%;
+    font-size: 13px;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  .editor-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .editor-btn {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+  }
+  .editor-btn.save {
+    background: #1a1a1a;
+    color: white;
+    border-color: #1a1a1a;
+  }
+  .reset-link {
+    font-size: 11px;
+    color: #999;
+    text-align: right;
+    margin-top: 16px;
+  }
+  .reset-link a {
+    color: #999;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<h1>Trip Planning Calendar — June, July, August 2026</h1>
+
+<div class="mode-row" id="modeRow"><button class="mode-btn">Clear tag</button><button class="mode-btn">Orlando trip</button><button class="mode-btn active">GA home trip</button><button class="mode-btn">Driving</button><button class="mode-btn">Other / family</button></div>
+<div class="legend" id="legend"><div class="legend-item"><span class="swatch" style="background:var(--orlando-bg);border-color:var(--orlando-border);"></span><span>Orlando trip</span></div><div class="legend-item"><span class="swatch" style="background:var(--ga-bg);border-color:var(--ga-border);"></span><span>GA home trip</span></div><div class="legend-item"><span class="swatch" style="background:var(--driving-bg);border-color:var(--driving-border);"></span><span>Driving</span></div><div class="legend-item"><span class="swatch" style="background:var(--other-bg);border-color:var(--other-border);"></span><span>Other / family</span></div></div>
+
+<div id="calendarContainer"><div class="month-block"><div class="month-header">June 2026</div><div class="grid"><div class="dow">S</div><div class="dow">M</div><div class="dow">T</div><div class="dow">W</div><div class="dow">T</div><div class="dow">F</div><div class="dow">S</div><div></div><button class="day tagged" style="background: var(--ga-bg); border-color: var(--ga-border); color: var(--ga-text);"><span>1</span></button><button class="day"><span>2</span></button><button class="day"><span>3</span></button><button class="day"><span>4</span></button><button class="day"><span>5</span></button><button class="day"><span>6</span></button><button class="day"><span>7</span></button><button class="day"><span>8</span></button><button class="day"><span>9</span></button><button class="day"><span>10</span></button><button class="day"><span>11</span></button><button class="day"><span>12</span></button><button class="day"><span>13</span></button><button class="day"><span>14</span></button><button class="day"><span>15</span></button><button class="day"><span>16</span></button><button class="day"><span>17</span></button><button class="day"><span>18</span></button><button class="day"><span>19</span></button><button class="day"><span>20</span></button><button class="day"><span>21</span></button><button class="day"><span>22</span></button><button class="day"><span>23</span></button><button class="day"><span>24</span></button><button class="day"><span>25</span></button><button class="day"><span>26</span></button><button class="day"><span>27</span></button><button class="day"><span>28</span></button><button class="day"><span>29</span></button><button class="day"><span>30</span></button></div></div><div class="month-block"><div class="month-header">July 2026</div><div class="grid"><div class="dow">S</div><div class="dow">M</div><div class="dow">T</div><div class="dow">W</div><div class="dow">T</div><div class="dow">F</div><div class="dow">S</div><div></div><div></div><div></div><button class="day"><span>1</span></button><button class="day tagged" style="background: var(--driving-bg); border-color: var(--driving-border); color: var(--driving-text);"><span>2</span></button><button class="day tagged" style="background: var(--driving-bg); border-color: var(--driving-border); color: var(--driving-text);"><span>3</span></button><button class="day tagged" style="background: var(--ga-bg); border-color: var(--ga-border); color: var(--ga-text);"><span>4</span></button><button class="day tagged" style="background: var(--ga-bg); border-color: var(--ga-border); color: var(--ga-text);"><span>5</span><span class="day-note">Baby shower</span></button><button class="day tagged" style="background: var(--ga-bg); border-color: var(--ga-border); color: var(--ga-text);"><span>6</span></button><button class="day tagged" style="background: var(--ga-bg); border-color: var(--ga-border); color: var(--ga-text);"><span>7</span></button><button class="day tagged" style="background: var(--ga-bg); border-color: var(--ga-border); color: var(--ga-text);"><span>8</span></button><button class="day tagged" style="background: var(--driving-bg); border-color: var(--driving-border); color: var(--driving-text);"><span>9</span></button><button class="day tagged" style="background: var(--driving-bg); border-color: var(--driving-border); color: var(--driving-text);"><span>10</span></button><button class="day"><span>11</span></button><button class="day"><span>12</span></button><button class="day"><span>13</span></button><button class="day"><span>14</span></button><button class="day"><span>15</span></button><button class="day"><span>16</span></button><button class="day"><span>17</span></button><button class="day"><span>18</span></button><button class="day"><span>19</span></button><button class="day"><span>20</span></button><button class="day"><span>21</span></button><button class="day"><span>22</span></button><button class="day"><span>23</span></button><button class="day"><span>24</span></button><button class="day"><span>25</span></button><button class="day tagged" style="background: var(--driving-bg); border-color: var(--driving-border); color: var(--driving-text);"><span>26</span></button><button class="day tagged" style="background: var(--driving-bg); border-color: var(--driving-border); color: var(--driving-text);"><span>27</span></button><button class="day tagged" style="background: var(--orlando-bg); border-color: var(--orlando-border); color: var(--orlando-text);"><span>28</span></button><button class="day tagged" style="background: var(--orlando-bg); border-color: var(--orlando-border); color: var(--orlando-text);"><span>29</span></button><button class="day tagged" style="background: var(--orlando-bg); border-color: var(--orlando-border); color: var(--orlando-text);"><span>30</span></button><button class="day tagged" style="background: var(--orlando-bg); border-color: var(--orlando-border); color: var(--orlando-text);"><span>31</span></button></div></div><div class="month-block"><div class="month-header">August 2026</div><div class="grid"><div class="dow">S</div><div class="dow">M</div><div class="dow">T</div><div class="dow">W</div><div class="dow">T</div><div class="dow">F</div><div class="dow">S</div><div></div><div></div><div></div><div></div><div></div><div></div><button class="day tagged" style="background: var(--orlando-bg); border-color: var(--orlando-border); color: var(--orlando-text);"><span>1</span></button><button class="day tagged" style="background: var(--orlando-bg); border-color: var(--orlando-border); color: var(--orlando-text);"><span>2</span></button><button class="day tagged" style="background: var(--orlando-bg); border-color: var(--orlando-border); color: var(--orlando-text);"><span>3</span></button><button class="day tagged" style="background: var(--orlando-bg); border-color: var(--orlando-border); color: var(--orlando-text);"><span>4</span></button><button class="day tagged" style="background: var(--driving-bg); border-color: var(--driving-border); color: var(--driving-text);"><span>5</span></button><button class="day tagged" style="background: var(--driving-bg); border-color: var(--driving-border); color: var(--driving-text);"><span>6</span></button><button class="day"><span>7</span></button><button class="day"><span>8</span></button><button class="day"><span>9</span></button><button class="day"><span>10</span></button><button class="day"><span>11</span></button><button class="day"><span>12</span></button><button class="day"><span>13</span></button><button class="day"><span>14</span></button><button class="day"><span>15</span></button><button class="day"><span>16</span></button><button class="day"><span>17</span></button><button class="day"><span>18</span></button><button class="day"><span>19</span></button><button class="day"><span>20</span></button><button class="day"><span>21</span></button><button class="day"><span>22</span></button><button class="day"><span>23</span></button><button class="day"><span>24</span></button><button class="day"><span>25</span></button><button class="day"><span>26</span></button><button class="day"><span>27</span></button><button class="day"><span>28</span></button><button class="day"><span>29</span></button><button class="day"><span>30</span></button><button class="day"><span>31</span></button></div></div></div>
+
+<div class="footer-note">
+  Pick a tag above, then click a day: first click paints it, click again to add a note, click a third time to clear it. Your edits save automatically in this browser.
+</div>
+<div id="summary"><div class="summary-row"><span class="swatch" style="background:var(--other-bg);border-color:var(--other-border);"></span><span>Other / family: Sep 5 – Sep 25 (3 days)</span></div><div class="summary-row"><span class="swatch" style="background:var(--driving-bg);border-color:var(--driving-border);"></span><span>Driving: Jul 2 – Aug 6 (8 days)</span></div><div class="summary-row"><span class="swatch" style="background:var(--orlando-bg);border-color:var(--orlando-border);"></span><span>Orlando trip: Jul 28 – Aug 4 (8 days)</span></div><div class="summary-row"><span class="swatch" style="background:var(--ga-bg);border-color:var(--ga-border);"></span><span>GA home trip: Jun 1 – Jul 8 (6 days)</span></div></div>
+
+<div id="editorOverlay">
+  <p id="editorLabel"></p>
+  <input id="editorInput" type="text" placeholder="Add a note for this day">
+  <div class="editor-actions">
+    <button class="editor-btn" id="editorCancel">Cancel</button>
+    <button class="editor-btn save" id="editorSave">Save</button>
+  </div>
+</div>
+
+<div class="reset-link"><a id="resetLink">Reset to defaults</a></div>
+
+<script>
+const palettes = {
+  orlando: { bg: 'var(--orlando-bg)', border: 'var(--orlando-border)', text: 'var(--orlando-text)', label: 'Orlando trip' },
+  ga: { bg: 'var(--ga-bg)', border: 'var(--ga-border)', text: 'var(--ga-text)', label: 'GA home trip' },
+  driving: { bg: 'var(--driving-bg)', border: 'var(--driving-border)', text: 'var(--driving-text)', label: 'Driving' },
+  other: { bg: 'var(--other-bg)', border: 'var(--other-border)', text: 'var(--other-text)', label: 'Other / family' }
+};
+
+const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const monthsToShow = [ {year:2026, month:5}, {year:2026, month:6}, {year:2026, month:7} ];
+
+const defaultTags = {
+  '2026-9-5': 'other', '2026-9-19': 'other', '2026-9-25': 'other',
+  '2026-7-26': 'driving', '2026-7-27': 'driving',
+  '2026-7-28': 'orlando', '2026-7-29': 'orlando', '2026-7-30': 'orlando',
+  '2026-7-31': 'orlando', '2026-8-1': 'orlando', '2026-8-2': 'orlando',
+  '2026-8-3': 'orlando', '2026-8-4': 'orlando',
+  '2026-8-5': 'driving', '2026-8-6': 'driving',
+  '2026-7-2': 'driving', '2026-7-3': 'driving',
+  '2026-7-4': 'ga', '2026-7-5': 'ga', '2026-7-6': 'ga', '2026-7-7': 'ga', '2026-7-8': 'ga',
+  '2026-7-9': 'driving', '2026-7-10': 'driving'
+};
+
+const defaultNotes = {
+  '2026-7-5': 'Baby shower',
+  '2026-9-5': 'Baby due',
+  '2026-9-19': 'Birthday',
+  '2026-9-25': 'Anniversary'
+};
+
+function loadState(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(fallback));
+  } catch (e) {
+    return JSON.parse(JSON.stringify(fallback));
+  }
+}
+
+let tags = loadState('tripCal_tags', defaultTags);
+let notes = loadState('tripCal_notes', defaultNotes);
+let mode = 'ga';
+let editingKey = null;
+
+function saveState() {
+  localStorage.setItem('tripCal_tags', JSON.stringify(tags));
+  localStorage.setItem('tripCal_notes', JSON.stringify(notes));
+}
+
+function dayKey(y, m, d) { return y + '-' + (m + 1) + '-' + d; }
+
+function renderModeRow() {
+  const modeRow = document.getElementById('modeRow');
+  const buttons = [
+    { key: 'none', label: 'Clear tag' },
+    { key: 'orlando', label: 'Orlando trip' },
+    { key: 'ga', label: 'GA home trip' },
+    { key: 'driving', label: 'Driving' },
+    { key: 'other', label: 'Other / family' }
+  ];
+  modeRow.innerHTML = '';
+  buttons.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'mode-btn' + (mode === b.key ? ' active' : '');
+    btn.textContent = b.label;
+    btn.onclick = () => { mode = b.key; renderModeRow(); };
+    modeRow.appendChild(btn);
+  });
+}
+
+function renderLegend() {
+  const legend = document.getElementById('legend');
+  legend.innerHTML = '';
+  Object.values(palettes).forEach(p => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = '<span class="swatch" style="background:' + p.bg + ';border-color:' + p.border + ';"></span><span>' + p.label + '</span>';
+    legend.appendChild(item);
+  });
+}
+
+function handleDayClick(year, month, d) {
+  const k = dayKey(year, month, d);
+  if (mode === 'none') {
+    delete tags[k];
+    delete notes[k];
+    saveState();
+    renderCalendar();
+    return;
+  }
+  if (tags[k] !== mode) {
+    tags[k] = mode;
+    saveState();
+    renderCalendar();
+  } else {
+    openEditor(k);
+  }
+}
+
+function openEditor(k) {
+  editingKey = k;
+  const [y, m, d] = k.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  document.getElementById('editorLabel').textContent = 'Note for ' + dt.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  document.getElementById('editorInput').value = notes[k] || '';
+  document.getElementById('editorOverlay').style.display = 'block';
+  document.getElementById('editorInput').focus();
+}
+
+function closeEditor() {
+  editingKey = null;
+  document.getElementById('editorOverlay').style.display = 'none';
+}
+
+document.getElementById('editorCancel').onclick = closeEditor;
+document.getElementById('editorSave').onclick = () => {
+  if (editingKey) {
+    const val = document.getElementById('editorInput').value.trim();
+    if (val) { notes[editingKey] = val; } else { delete notes[editingKey]; }
+    saveState();
+  }
+  closeEditor();
+  renderCalendar();
+};
+
+document.getElementById('resetLink').onclick = () => {
+  if (confirm('Reset calendar to default dates? This clears any edits you made.')) {
+    tags = JSON.parse(JSON.stringify(defaultTags));
+    notes = JSON.parse(JSON.stringify(defaultNotes));
+    saveState();
+    renderCalendar();
+  }
+};
+
+function renderMonth(year, month) {
+  const block = document.createElement('div');
+  block.className = 'month-block';
+
+  const header = document.createElement('div');
+  header.className = 'month-header';
+  header.textContent = monthNames[month] + ' ' + year;
+  block.appendChild(header);
+
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+
+  ['S','M','T','W','T','F','S'].forEach(d => {
+    const h = document.createElement('div');
+    h.className = 'dow';
+    h.textContent = d;
+    grid.appendChild(h);
+  });
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  for (let i = 0; i < firstDay; i++) {
+    const empty = document.createElement('div');
+    grid.appendChild(empty);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const k = dayKey(year, month, d);
+    const tagged = tags[k];
+    const note = notes[k];
+    const cell = document.createElement('button');
+    cell.className = 'day' + (tagged ? ' tagged' : '');
+    if (tagged) {
+      const p = palettes[tagged];
+      cell.style.background = p.bg;
+      cell.style.borderColor = p.border;
+      cell.style.color = p.text;
+    }
+    cell.innerHTML = '<span>' + d + '</span>' + (note ? '<span class="day-note">' + note + '</span>' : '');
+    cell.onclick = () => handleDayClick(year, month, d);
+    grid.appendChild(cell);
+  }
+
+  block.appendChild(grid);
+  return block;
+}
+
+function renderSummary() {
+  const summary = document.getElementById('summary');
+  summary.innerHTML = '';
+  const grouped = {};
+  Object.entries(tags).forEach(([k, tag]) => {
+    if (!grouped[tag]) grouped[tag] = [];
+    const [y, m, d] = k.split('-').map(Number);
+    grouped[tag].push(new Date(y, m - 1, d));
+  });
+
+  if (Object.keys(grouped).length === 0) {
+    summary.innerHTML = '<span style="color:#aaa; font-size:12px;">No dates tagged yet.</span>';
+    return;
+  }
+
+  const fmt = (dt) => dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  Object.entries(grouped).forEach(([tag, dates]) => {
+    dates.sort((a, b) => a - b);
+    const first = dates[0];
+    const last = dates[dates.length - 1];
+    const p = palettes[tag];
+    const row = document.createElement('div');
+    row.className = 'summary-row';
+    row.innerHTML = '<span class="swatch" style="background:' + p.bg + ';border-color:' + p.border + ';"></span><span>' + p.label + ': ' + fmt(first) + (dates.length > 1 ? ' \u2013 ' + fmt(last) : '') + ' (' + dates.length + ' day' + (dates.length > 1 ? 's' : '') + ')</span>';
+    summary.appendChild(row);
+  });
+}
+
+function renderCalendar() {
+  const container = document.getElementById('calendarContainer');
+  container.innerHTML = '';
+  monthsToShow.forEach(m => {
+    container.appendChild(renderMonth(m.year, m.month));
+  });
+  renderSummary();
+}
+
+renderModeRow();
+renderLegend();
+renderCalendar();
+</script>
+
+
+
+</body></html>
